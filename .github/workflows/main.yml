@@ -17,12 +17,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # 获取完整提交历史[3](@ref)
+        fetch-depth: 0  # 获取完整提交历史[2](@ref)
 
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.21'  # 指定精确版本避免兼容问题[2](@ref)
+        check-latest: true  # 确保获取最新补丁版本[2](@ref)
+
+    - name: Install WASM target
+      run: go env -w GOOS=js GOARCH=wasm  # 显式设置编译目标[1](@ref)
 
     - name: Cache dependencies
       uses: actions/cache@v3
@@ -30,13 +34,14 @@ jobs:
         path: |
           ~/go/pkg/mod
           gohttp/gosrc
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # 依赖变更自动失效缓存[1](@ref)
 
   build:
     needs: setup
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ github.workflow }}-${{ github.sha }}
+    strategy:
+      matrix:
+        build_type: [prod, debug]  # 矩阵构建支持多模式[1](@ref)
     steps:
     - name: Inject metadata
       run: |
@@ -45,24 +50,29 @@ jobs:
         echo "GIT_HASH=${{ github.sha }}" >> $GITHUB_ENV
         echo "VERSION=$(cat ${{ env.VERSION_FILE }})" >> $GITHUB_ENV
 
-    - name: Production build
-      if: github.event_name == 'push'
+    - name: Configure build flags
       run: |
-        make build
-        gzip -9 -k ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}.wasm
-        echo "WASM_SIZE=$(wc -c < ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}.wasm.gz)" >> $GITHUB_ENV
+        if [ "${{ matrix.build_type }}" == "prod" ]; then
+          echo "LDFLAGS=-s -w -X gohttp/gosrc/gohttp.VERSION=$VERSION" >> $GITHUB_ENV
+        else
+          echo "LDFLAGS=-X gohttp/gosrc/gohttp.DEBUG=true" >> $GITHUB_ENV
+        fi
 
-    - name: Debug build
-      if: github.event_name == 'pull_request'
+    - name: Build WASM
       run: |
-        make debug
-        gzip -9 -k ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}.wasm
-        echo "DEBUG_SIZE=$(wc -c < ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}.wasm.gz)" >> $GITHUB_ENV
+        mkdir -p ${{ env.OUTPUT_DIR }}
+        GOOS=js GOARCH=wasm go build \
+          -ldflags="${{ env.LDFLAGS }}" \
+          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm *.go
+
+    - name: Compress artifact
+      run: |
+        gzip -9 -k ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm
+        echo "${{ matrix.build_type }}_SIZE=$(wc -c < ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm.gz)" >> $GITHUB_ENV
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
@@ -71,5 +81,4 @@ jobs:
         path: |
           ${{ env.OUTPUT_DIR }}/*.wasm
           ${{ env.OUTPUT_DIR }}/*.gz
-
-    
+        retention-days: 7  # 设置制品保留周期[1](@ref)
