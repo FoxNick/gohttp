@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: gohttp/gosrc/server/static
-  VERSION_FILE: gohttp/gosrc/version
+  OUTPUT_DIR: ./server/static
+  VERSION_FILE: ../version
 
 jobs:
   setup:
@@ -60,7 +60,7 @@ jobs:
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
-          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm gohttp/gosrc/gohttp/gohttp.go
+          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm gohttp.go
 
     - name: Compress artifact
       run: |
