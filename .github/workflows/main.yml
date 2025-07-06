@@ -60,7 +60,7 @@ jobs:
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
-          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm gohttp/gosrc/*.go
+          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm gohttp/gosrc/gohttp/*.go
 
     - name: Compress artifact
       run: |
