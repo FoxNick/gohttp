@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: ./server/static
-  VERSION_FILE: ../version
+  OUTPUT_DIR: gohttp/gosrc/server/static
+  VERSION_FILE: gohttp/gosrc/version
 
 jobs:
   setup:
@@ -30,7 +30,7 @@ jobs:
       with:
         path: |
           ~/go/pkg/mod
-          gohttp/gosrc
+          gohttp
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # 依赖变更自动失效缓存[1](@ref)
 
   build:
@@ -50,9 +50,9 @@ jobs:
     - name: Configure build flags
       run: |
         if [ "${{ matrix.build_type }}" == "prod" ]; then
-          echo "LDFLAGS=-s -w -X gohttp/gosrc/gohttp.VERSION=$VERSION" >> $GITHUB_ENV
+          echo "LDFLAGS=-s -w -X gohttp/gosrc/gohttp/gohttp.VERSION=$VERSION" >> $GITHUB_ENV
         else
-          echo "LDFLAGS=-X gohttp/gosrc/gohttp.DEBUG=true" >> $GITHUB_ENV
+          echo "LDFLAGS=-X gohttp/gosrc/gohttp/gohttp.DEBUG=true" >> $GITHUB_ENV
         fi
 
     - name: Build WASM
@@ -60,7 +60,7 @@ jobs:
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
-          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm gohttp.go
+          -o ${{ env.OUTPUT_DIR }}/${{ env.LIB_NAME }}_${{ matrix.build_type }}.wasm *.go
 
     - name: Compress artifact
       run: |
