@@ -30,7 +30,7 @@ jobs:
       with:
         path: |
           ~/go/pkg/mod
-          gohttp
+          gohttp/gosrc
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # 依赖变更自动失效缓存[1](@ref)
 
   build:
