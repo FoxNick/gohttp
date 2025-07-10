@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: ./server/static
-  VERSION_FILE: ../version
+  OUTPUT_DIR: gohttp/gosrc/server/static
+  VERSION_FILE: gohttp/gosrc/version
 
 jobs:
   setup:
@@ -30,7 +30,7 @@ jobs:
       with:
         path: |
           ~/go/pkg/mod
-          gohttp/gosrc
+          gohttp
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # 依赖变更自动失效缓存[1](@ref)
 
   build:
@@ -57,7 +57,7 @@ jobs:
 
     - name: Build WASM
       run: |
-        #cd gosrc/export_wasm
+        cd gohttp/gosrc/export_wasm
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
