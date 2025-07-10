@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: ./server/static
-  VERSION_FILE: ./version
+  OUTPUT_DIR: ../server/static
+  VERSION_FILE: ../version
 
 jobs:
   setup:
