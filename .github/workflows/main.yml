@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: gohttp/gosrc/server/static
-  VERSION_FILE: gohttp/gosrc/version
+  OUTPUT_DIR: ./server/static
+  VERSION_FILE: ./version
 
 jobs:
   setup:
@@ -57,7 +57,7 @@ jobs:
 
     - name: Build WASM
       run: |
-        cd gohttp/gosrc/export_wasm
+        #cd gohttp/gosrc/export_wasm
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
