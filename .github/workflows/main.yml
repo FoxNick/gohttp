@@ -4,8 +4,8 @@ on:
 
 env:
   LIB_NAME: libgohttp
-  OUTPUT_DIR: ../server/static
-  VERSION_FILE: ../version
+  OUTPUT_DIR: gosrc/server/static
+  VERSION_FILE: gosrc/version
 
 jobs:
   setup:
@@ -30,7 +30,6 @@ jobs:
       with:
         path: |
           ~/go/pkg/mod
-          gohttp
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # 依赖变更自动失效缓存[1](@ref)
 
   build:
