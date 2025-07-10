@@ -5,7 +5,7 @@ on:
 env:
   LIB_NAME: libgohttp
   OUTPUT_DIR: gosrc/server/static
-  VERSION_FILE: gosrc/version
+  VERSION_FILE: 1.0.0
 
 jobs:
   setup:
@@ -44,7 +44,7 @@ jobs:
         echo "BUILD_TIME=$(date +%s)" >> $GITHUB_ENV
         echo "GO_VERSION=$(go version)" >> $GITHUB_ENV
         echo "GIT_HASH=${{ github.sha }}" >> $GITHUB_ENV
-        echo "VERSION=$(cat ${{ env.VERSION_FILE }})" >> $GITHUB_ENV
+        echo "VERSION=${{ env.VERSION_FILE }}" >> $GITHUB_ENV
 
     - name: Configure build flags
       run: |
