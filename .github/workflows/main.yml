@@ -57,7 +57,7 @@ jobs:
 
     - name: Build WASM
       run: |
-        cd gosrc/export_wasm
+        #cd gosrc/export_wasm
         mkdir -p ${{ env.OUTPUT_DIR }}
         GOOS=js GOARCH=wasm go build \
           -ldflags="${{ env.LDFLAGS }}" \
